@@ -1,16 +1,18 @@
 Package: JonsSSUtils
 Type: Package
-Title: What the Package Does (Title Case)
+Title: Stock Synthesis utility functions used in my stock assessments. 
 Version: 0.1.0
 Authors@R: c(
     person(
-      "Jane", "Doe",
-      email = "jane@example.com",
+      "Jonathan", "Smart",
+      email = "jonsmartphd@gmail.com",
       role = c("aut", "cre")
     )
   )
-Description: More about what it does (maybe more than one line).
-    Continuation lines should be indented.
+Description: Stock Synthesis utility functions used in my stock assessments. 
+    This is publicly available so that my collaborators can access this code as needed.
+    It is a series of wrapper functions around SS and `r4ss` function calls, designed 
+    to speed up my workflows.
 License: What license is it under?
 Encoding: UTF-8
 LazyData: true
