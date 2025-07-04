@@ -34,17 +34,17 @@
 #'
 #' @examples
 Run_Stock_Synthesis <- function(Origin = getwd(),
-                          SS_dr = NULL,
-                          SS_loc =  '/Users/jonathansmart/Documents/SS/',
-                          do_hess = TRUE,
-                          do_forecast = FALSE,
-                          plots = TRUE,
-                          ss_exe = "ss3_osx_arm64",
-                          print_r4SS_to_screen = FALSE,
-                          print_updates_to_screen = TRUE,
-                          Ask = TRUE,
-                          copy_to_origin = TRUE,
-                          ...){
+                                SS_dr = NULL,
+                                SS_loc =  '/Users/jonathansmart/Documents/SS/',
+                                do_hess = TRUE,
+                                do_forecast = FALSE,
+                                plots = TRUE,
+                                ss_exe = "ss3_osx_arm64",
+                                print_r4SS_to_screen = FALSE,
+                                print_updates_to_screen = TRUE,
+                                Ask = TRUE,
+                                copy_to_origin = TRUE,
+                                ...){
 
   Original_WD <- getwd()
 
@@ -77,24 +77,65 @@ Run_Stock_Synthesis <- function(Origin = getwd(),
 
     # Copy the SS input files from source directory
     r4ss::copy_SS_inputs(dir.old = Origin,
-                   dir.new = SS_dr,
-                   verbose = print_updates_to_screen)
+                         dir.new = SS_dr,
+                         verbose = print_updates_to_screen)
   }
+
+  # Check SS_loc ends with a '/'
+  if (!endsWith(SS_loc, "/")) {
+    SS_loc <- paste0(SS_loc, "/")
+  }
+
+  # Get the executable path
+  executable_path <- paste0(SS_loc,ss_exe)
+
+
+  # determine the operating system
+  if(.Platform[["OS.type"]] == "windows"){OS <- "windows"}
+  if(substr(R.version[["os"]], 1, 6) == "darwin" && R.version[["arch"]]=="x86_64"){OS <- "Mac"}
+  if(substr(R.version[["os"]], 1, 6) == "darwin" && R.version[["arch"]]=="aarch64"){OS <- "Mac"}
+  if(R.version[["os"]] == "linux-gnu"){OS <- "linux"}
+
+  # Check for whitespaces in executable path for Mac and Linux OS
+  if(OS != "windows" & grepl("\\s", executable_path)) stop("Remove whitespaces from your SS file path you lunatic!")
+
+
+  # if(do_hess){
+  #   if(OS == "windows"){
+  #     command <- paste0("C: && cd ",SS_dr,"&&",SS_loc,"/",ss_exe)
+  #   } else{
+  #     command <- paste0("chmod +x ", executable_path, " ; cd ", SS_dr, "; ../",ss_exe)
+  #   }
+  # } else{
+  #   if(OS == "windows"){
+  #     command <- paste0("C: && cd ",SS_dr,"&&",SS_loc,"/",ss_exe, " -nohess")
+  #   } else{
+  #     command <- paste0("chmod +x ", executable_path, " ; cd ", SS_dr, "; ../",ss_exe, " -nohess -nox")
+  #   }
+  # }
+
   # Run SS3 from within the SS directory
   # Calculate hessian matrix if specified
 
-  executable_path <- paste0(SS_loc,ss_exe)
-
-  if(do_hess){
-    command <- paste0("chmod +x ", executable_path, " ; cd ", SS_dr, "; ../",ss_exe)
+  if(OS == "windows"){
+    command <- paste0("C: && cd ",SS_dr,"&&",SS_loc,"/",ss_exe)
   } else{
-    command <- paste0("chmod +x ", executable_path, " ; cd ", SS_dr, "; ../",ss_exe, " -nohess -nox")
+    command <- paste0("chmod +x ", executable_path, " ; cd ", SS_dr, "; ../",ss_exe)
   }
+
+  if(do_hess){ paste0(command, " -nohess -nox")}
+
 
   if(print_updates_to_screen)
     cat(crayon::blue("\nRunning Stock Synthesis\n"))
+
   setwd(SS_dr)
-  system(command, intern=!print_r4SS_to_screen)
+
+  if(OS == "windows"){
+    system("cmd.exe", input = command, intern=!print_r4SS_to_screen)
+  } else {
+    system(command, intern=!print_r4SS_to_screen)
+  }
 
   setwd(Origin)
 
@@ -123,3 +164,19 @@ Run_Stock_Synthesis <- function(Origin = getwd(),
     cat(paste(crayon::green("\n\u2713"),crayon::blue("File transfer complete\n")))
   }
 }
+
+
+
+
+
+
+.Platform[["OS.type"]] == "windows"
+substr(R.version[["os"]], 1, 6) == "darwin" && R.version[["arch"]]=="x86_64"
+substr(R.version[["os"]], 1, 6) == "darwin" && R.version[["arch"]]=="aarch64"
+R.version[["os"]] == "linux-gnu"
+
+
+
+
+
+
