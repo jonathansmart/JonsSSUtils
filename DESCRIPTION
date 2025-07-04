@@ -16,3 +16,5 @@ Description: Stock Synthesis utility functions used in my stock assessments.
 License: What license is it under?
 Encoding: UTF-8
 LazyData: true
+Depends: 
+    R (>= 3.5)
