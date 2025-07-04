@@ -24,7 +24,11 @@ Function to create the inputs$ctl$MG_parms table.The number and order of
     needs to be added to the function
 }
 \examples{
-create_MG_Parms_df( N_growth_patterns = 1,
- n_areas = 1,
- GP_per_area = 1 )
+\dontrun{
+data("example_ss_files")
+
+example_ss_files$ctl$MG_parms <- create_MG_Parms_df( N_growth_patterns = 1,
+                                                     n_areas = 1,
+                                                     GP_per_area = 1 )
+                                                     }
 }

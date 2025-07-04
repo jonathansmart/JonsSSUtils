@@ -1,6 +1,6 @@
 Package: JonsSSUtils
 Type: Package
-Title: Stock Synthesis utility functions used in my stock assessments. 
+Title: Stock Synthesis utility functions used in my stock assessments
 Version: 0.1.0
 Authors@R: c(
     person(
@@ -13,7 +13,15 @@ Description: Stock Synthesis utility functions used in my stock assessments.
     This is publicly available so that my collaborators can access this code as needed.
     It is a series of wrapper functions around SS and `r4ss` function calls, designed 
     to speed up my workflows.
-License: What license is it under?
+License: GPL (>= 3)
+Imports: 
+    crayon,
+    r4ss
+Suggests: 
+    knitr,
+    rmarkdown,
+VignetteBuilder: 
+    knitr
 Encoding: UTF-8
 LazyData: true
 Depends: 

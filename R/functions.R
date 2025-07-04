@@ -37,7 +37,7 @@
 #'     copied back to the `Origin`? This can take a while if working remotely with
 #'     an agency network.
 #' @param ... Function calls to be passed to `r4ss`
-#'
+#' @importFrom utils menu
 #' @import crayon r4ss
 #' @returns An SS model run saved to the relevant directories as well as `r4ss`
 #'     plots if requested. No R objects are returned.
@@ -191,9 +191,14 @@ Run_Stock_Synthesis <- function(Origin = getwd(),
 #' @returns A data.frame formatted for inputs$ctl$MG_parms for `r4ss`
 #' @export
 #'
-#' @examples create_MG_Parms_df( N_growth_patterns = 1,
-#'  n_areas = 1,
-#'  GP_per_area = 1 )
+#' @examples
+#' \dontrun{
+#' data("example_ss_files")
+#'
+#' example_ss_files$ctl$MG_parms <- create_MG_Parms_df( N_growth_patterns = 1,
+#'                                                      n_areas = 1,
+#'                                                      GP_per_area = 1 )
+#'                                                      }
 create_MG_Parms_df <- function(N_growth_patterns = 1, n_areas = 1, GP_per_area = 1){
 
   if(GP_per_area > N_growth_patterns) message("More GP per area specified than number of GP requested. Check outputs")
@@ -297,7 +302,6 @@ create_MG_Parms_df <- function(N_growth_patterns = 1, n_areas = 1, GP_per_area =
 #'
 #' @returns A tuned SS model following the instructions given. No R objects are returned.
 #' @export
-#'
 Tune_SS_Comps <- function(
     Origin = NULL,
     SS_dr = NULL,
@@ -352,7 +356,7 @@ Tune_SS_Comps <- function(
 
   cat(paste(crayon::green("\n\u2713"),crayon::blue("Un-tuned SS has run\n")))
 
-  model_outputs <- suppressMessages(r4ss::SS_output(dir = SS_drive, printstats = F))
+  model_outputs <- suppressMessages(r4ss::SS_output(dir = SS_dr, printstats = F))
 
   Outputs <- data.frame(Values = round(c(model_outputs$likelihoods_used[,"values"],
                                          model_outputs$current_depletion,
@@ -572,7 +576,6 @@ Tune_SS_Comps <- function(
 #' @param copy_to_origin Do you want the SS files (and `r4ss` plots if requested)
 #'     copied back to the `Origin`? This can take a while if working remotely with
 #'     an agency network.
-#'
 #' @returns Plots saved to created directories of the parameter profiling. No
 #'     R objects are returned.
 #' @export
@@ -645,10 +648,10 @@ Profile_SS_Parameters <- function(Origin = getwd(), # Folder on network drive wi
 
   # read the output files (with names like Report1.sso, Report2.sso, etc.)
   profilemodels <- r4ss::SSgetoutput(dirvec = dir_prof, keyvec = 1:Nprofile,
-                               verbose = print_r4SS_to_screen)
+                                     verbose = print_r4SS_to_screen)
   # summarize output
   profilesummary <- r4ss::SSsummarize(profilemodels,
-                                verbose = print_r4SS_to_screen)
+                                      verbose = print_r4SS_to_screen)
 
   cat(paste(crayon::green("\n\u2713"),crayon::blue("Profiling complete\n")))
 
@@ -663,12 +666,12 @@ Profile_SS_Parameters <- function(Origin = getwd(), # Folder on network drive wi
 
     # plot profile using summary created above
     r4ss::SSplotProfile(profilesummary, # summary object
-                  profile.string = string, # substring of profile parameter
-                  profile.label = profile.label,
-                  plotdir = plot_dir,
-                  add_cutoff = TRUE,
-                  verbose = print_r4SS_to_screen,
-                  print = TRUE)
+                        profile.string = string, # substring of profile parameter
+                        profile.label = profile.label,
+                        plotdir = plot_dir,
+                        add_cutoff = TRUE,
+                        verbose = print_r4SS_to_screen,
+                        print = TRUE)
 
     cat(paste(crayon::green("\n\u2713"),crayon::blue("Piner plot produced\n")))
 
@@ -678,10 +681,10 @@ Profile_SS_Parameters <- function(Origin = getwd(), # Folder on network drive wi
     # make timeseries plots comparing models in profile
     suppressMessages(
       r4ss::SSplotComparisons(profilesummary,
-                        legendlabels = legendlabels,
-                        plotdir = plot_dir,
-                        verbose = print_r4SS_to_screen,
-                        print = TRUE)
+                              legendlabels = legendlabels,
+                              plotdir = plot_dir,
+                              verbose = print_r4SS_to_screen,
+                              print = TRUE)
     )
     cat(paste(crayon::green("\n\u2713"),crayon::blue("Comparison plots produced\n")))
 
