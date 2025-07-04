@@ -1,6 +1,17 @@
 
 #' Run_Stock_Synthesis
-#' @description
+#' @description The Stock Synthesis software is getting harder to run on modern
+#'     IT setups given fears around malicious software. Often stock assessments are
+#'     best developed in a shared space such as a network or repository. However,
+#'     often the SS executable can't be run from these locations and a specific
+#'     directory on a computer is needed so that the file can be marked as safe.
+#'     Having worked in many agencies, each with different IT permissions, the best
+#'     way I've found to handle this is to develop the SS files in whatever location
+#'     is most convenient (such as a shared network directory), copy those files to
+#'     the safe folder where SS can be run, and then copy the SS files back to the
+#'     original location. This is a bit circular but it works, and this code makes that
+#'     process simple. It will also produce the `r4ss` plots in one hit and transfer
+#'     these too.
 #' @param Origin The working directory on a network or hard drive where the
 #'     Stock Synthesis assessment is being performed. The SS files will be copied
 #'     from here to `SS_dr` where the model is run. If `copy_to_origin == TRUE`
@@ -32,7 +43,6 @@
 #'     plots if requested. No R objects are returned.
 #' @export
 #'
-#' @examples
 Run_Stock_Synthesis <- function(Origin = getwd(),
                                 SS_dr = NULL,
                                 SS_loc =  '/Users/jonathansmart/Documents/SS/',
@@ -253,24 +263,41 @@ create_MG_Parms_df <- function(N_growth_patterns = 1, n_areas = 1, GP_per_area =
 }
 
 #' Tune_SS_Comps
-#'
-#' @param Origin
-#' @param SS_dr
-#' @param SS_loc
+#' @description Length and age compositions are tuned using either the Francis (default) or MI
+#'     methods. This function is a wrapper around the `r4ss::tune_comps` function
+#'     which 1) copies files to necessary locations with the correct permisions
+#'     to use SS (see description for `Run_Stock_Synthesis`), and 2) will perform
+#'     numerous iterations of the tuning in an attempt to achieve a stable tuned
+#'     model. The user can specify the number of iterations to run or set
+#'     `auto_run == TRUE` so that the model is tuned until criteria are met. These
+#'     include 1) changes in total log likelihood are less than 2, and 2) the model
+#'     has evidence of convergence.
+#' @param Origin The working directory on a network or hard drive where the
+#'     Stock Synthesis assessment is being performed. The SS files will be copied
+#'     from here to `SS_dr` where the model is run. If `copy_to_origin == TRUE`
+#'     (default) then the SS model files are copied back to this directory.
+#' @param SS_dr The location on the hard drive where the SS model will be run locally.
+#'     make sure there is no white space in this filepath, especially if using a
+#'     non Windows computer.
+#' @param SS_loc The location of the SS executable file.
 #' @param ss_exe The name of the SS executable. The default is 'ss3_osx_arm64'
 #'     which corresponds to my own operating system.
-#' @param over_write_model
-#' @param method
-#' @param copy_to_origin
-#' @param auto_run
-#' @param n_iters
-#' @param plots
-#' @param ...
+#' @param over_write_model Should the existing tuned model be overwritten. `FALSE`
+#'.    will generate a copy of the model to be tuned. `TRUE` will overwrite the
+#'.    existing tuned model (necessary for iterative tuning steps)
+#' @param method `Francis` or `MI` for McCallister and Ianelli method
+#' @param copy_to_origin Do you want the SS files (and `r4ss` plots if requested)
+#'     copied back to the `Origin`? This can take a while if working remotely with
+#'     an agency network.
+#' @param auto_run Keep running tuning until further iterations no longer improve
+#'.    the model. Maxes out at 50 runs
+#' @param n_iters Pre-set number of tuning iterations. Ignored if `auto-run == TRUE`
+#' @param plots Do you want to produce the `r4ss` outputs?
+#' @param ... Function calls to be passed to `r4ss`
 #'
-#' @returns
+#' @returns A tuned SS model following the instructions given. No R objects are returned.
 #' @export
 #'
-#' @examples
 Tune_SS_Comps <- function(
     Origin = NULL,
     SS_dr = NULL,
@@ -285,7 +312,7 @@ Tune_SS_Comps <- function(
     ...
 ){
 
-  if(!method %in% c("Francis", "MI")) stop("'method' should be either 'Francis' or 'MI' for the use of the 'Tune_SS_Comps_on_NT_network' function")
+  if(!method %in% c("Francis", "MI")) stop("'method' should be either 'Francis' or 'MI' for the use of the 'Tune_SS_Comps' function")
 
   if(is.null(Origin)) stop("SS directory Network not specified")
   if(is.null(SS_dr)) stop("SS directory on C drive not specified")
@@ -518,25 +545,38 @@ Tune_SS_Comps <- function(
 
 
 #' Profile_SS_Parameters
-#'
-#' @param Origin
-#' @param SS_dr
-#' @param string
-#' @param vector
-#' @param Piner
-#' @param Comparisons
-#' @param profile.label
-#' @param legendlabels
-#' @param SS_loc
+#' @description This is a wrapper function around `r4ss::profile` which, again,
+#'     runs stock synthesis from the designated location on your computer and stores
+#'     the outputs in the directory that the stock assessment is being developed.
+#'     The profile plots for the chosen parameter are automatically saved in new
+#'     locations on the computer.
+#' @param Origin The working directory on a network or hard drive where the
+#'     Stock Synthesis assessment is being performed. The SS files will be copied
+#'     from here to `SS_dr` where the model is run. If `copy_to_origin == TRUE`
+#'     (default) then the SS model files are copied back to this directory.
+#' @param SS_dr The location on the hard drive where the SS model will be run locally.
+#'     make sure there is no white space in this filepath, especially if using a
+#'     non Windows computer.
+#' @param SS_loc The location of the SS executable file.
+#' @param string A string that determines which parameter within the model is
+#'     profiled.
+#' @param vector The vector of parameter values to be profiled
+#' @param Piner Should Piner plots be produced
+#' @param Comparisons Should model comparison plots be produced?
+#' @param profile.label Label for the plot titles (typically the parameter being profiled)
+#' @param legendlabels Labels used for the plot legends
 #' @param ss_exe The name of the SS executable. The default is 'ss3_osx_arm64'
 #'     which corresponds to my own operating system.
-#' @param print_r4SS_to_screen
-#' @param copy_to_origin
+#' @param print_r4SS_to_screen How much information from `r4ss` would you like
+#'     vommitted back at you?
+#' @param copy_to_origin Do you want the SS files (and `r4ss` plots if requested)
+#'     copied back to the `Origin`? This can take a while if working remotely with
+#'     an agency network.
 #'
-#' @returns
+#' @returns Plots saved to created directories of the parameter profiling. No
+#'     R objects are returned.
 #' @export
 #'
-#' @examples
 Profile_SS_Parameters <- function(Origin = getwd(), # Folder on network drive with the model to be profiled
                                   SS_dr = NULL, # top level folder where models are being run on C drive
                                   string = NULL, # a string that will select the parameter to be profiled ("steep", "NatM_p_1_Fem_GP_1", etc.). Does not need to match exactly but benefits from this
